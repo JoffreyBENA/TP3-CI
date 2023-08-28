@@ -1,0 +1,150 @@
+name: Integration Continue
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  pylint-test:
+    runs-on: ${{ vars.IMAGE_OS }}
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pylint
+          pip install pylint-json2html
+      - name: Analysing the code with pylint
+        run: |
+          cd app
+          mkdir reports
+          cd reports
+          mkdir pylint
+          cd pylint
+          cd ../..
+
+          pylint $(git ls-files '**/*.py') > ./reports/pylint/report.json || exit 0
+          pylint-json2html -o ./reports/pylint/report.html ./reports/pylint/report.json
+      - name: Archive results
+        uses: actions/upload-artifact@v3
+        with:
+          name: pylint result
+          path: ./app/reports/pylint
+
+  unittest-test:
+    runs-on: ${{ vars.IMAGE_OS }}
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install html-testRunner
+      - name: Analysing the code with unittest
+        run: |
+          cd app
+          python -m unittest ${{ vars.UNITTEST_FILE}}
+      - name: Archive report
+        uses: actions/upload-artifact@v3
+        with:
+          name: unittest results
+          path: |
+            app/reports/unittest/
+
+  radon-raw-test:
+    runs-on: ${{ vars.IMAGE_OS }}
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install radon
+          pip install json2tree
+      - name: Analysing the code with radon
+        run: |
+          pwd
+          cd ./app
+          mkdir reports
+          cd ./reports
+          mkdir raw
+          cd ../..
+          radon raw -j ./app > ./app/reports/raw/report.json; json2tree -j ./app/reports/raw/report.json -o ./app/reports/raw/report.html -t 1
+      - name: Archive report
+        uses: actions/upload-artifact@v3
+        with:
+          name: radon raw results
+          path: |
+            app/reports/raw/
+
+  radon-cc-test:
+    runs-on: ${{ vars.IMAGE_OS }}
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install radon
+          pip install json2tree
+      - name: Analysing the code with radon
+        run: |
+          pwd
+          cd ./app
+          mkdir reports
+          cd ./reports
+          mkdir cc
+          cd ../..
+          radon cc -j ./app > ./app/reports/cc/report.json; json2tree -j ./app/reports/cc/report.json -o ./app/reports/cc/report.html -t 1
+      - name: Archive report
+        uses: actions/upload-artifact@v3
+        with:
+          name: radon cc results
+          path: |
+            app/reports/cc/
+
+  build-push-image:
+    needs:
+      [pylint-test, unittest-test, radon-raw-test, radon-cc-test]
+    runs-on: ${{ vars.IMAGE_OS }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Login to Docker Hub
+        run: | # log into docker hub account
+          docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_TOKEN }}
+      - name: Build docker image
+        run: |
+          docker build . --file ${{ vars.IMAGE_FILE }} --tag ${{ secrets.DOCKER_USER }}/${{ vars.DOCKER_REPO}}:${{ vars.DOCKER_IMAGE_VERSION }}
+      - name: Push docker image
+        run: |
+          docker push  ${{ secrets.DOCKER_USER }}/${{ vars.DOCKER_REPO}}:${{ vars.DOCKER_IMAGE_VERSION }}
