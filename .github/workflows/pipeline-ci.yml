@@ -92,7 +92,7 @@ jobs:
           cd ./reports
           mkdir raw
           cd ../..
-          radon raw -j ./app > ./app/reports/raw/report.json; json2tree -j ./app/reports/raw/report.json -o ./app/reports/raw/report.html -t 1
+          radon raw -j ./app > ./app/reports/raw/report.json; json2tree -j ./app/reports/raw/report.html -t 1
       - name: Archive report
         uses: actions/upload-artifact@v3
         with:
@@ -124,7 +124,7 @@ jobs:
           cd ./reports
           mkdir cc
           cd ../..
-          radon cc -j ./app > ./app/reports/cc/report.json; json2tree -j ./app/reports/cc/report.json -o ./app/reports/cc/report.html -t 1
+          radon cc -j ./app > ./app/reports/cc/report.json; json2tree -j ./app/reports/cc/report.html -t 1
       - name: Archive report
         uses: actions/upload-artifact@v3
         with:
