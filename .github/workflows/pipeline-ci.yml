@@ -133,8 +133,7 @@ jobs:
             app/reports/cc/
 
   build-push-image:
-    needs:
-      [pylint-test, unittest-test, radon-raw-test, radon-cc-test]
+    needs: [pylint-test, unittest-test, radon-raw-test, radon-cc-test]
     runs-on: ${{ vars.IMAGE_OS }}
 
     steps:
