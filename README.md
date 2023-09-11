@@ -46,20 +46,16 @@ Documentation de la chaine d’intégration continue permettant de valider l’a
 ```
 
 * README.md: Un fichier Markdown contenant la documentation et les informations importantes sur votre projet.
-
 * app: Un répertoire contenant le code source de l'application. Il contient plusieurs sous-dossiers et fichiers, notamment :
-
 * application: Un module Python contenant un fichier __init__.py et application.py.
 * command: Un module Python contenant un fichier __init__.py et command.py.
-* machine: Un module Python contenant un fichier __init__.py, machine.py, et un sous-dossier __pycache__ qui semble contenir des fichiers en cache.
+* machine: Un module Python contenant un fichier __init__.py, machine.py, et un sous-dossier __pycache__ qui contient des fichiers en cache.
 * main.py: Le fichier principal de votre application.
 * requirements.txt: Un fichier spécifiant les dépendances Python nécessaires pour votre projet.
 * test: Un dossier contenant les tests unitaires de votre application. Il contient un sous-dossier unit avec un fichier test.py.
-* docker-app: Un répertoire contenant un fichier Dockerfile pour la construction d'une image Docker liée à votre application.
-
-pipeline-ci-schema: Un répertoire contenant un schéma de pipeline CI au format Draw.io, ainsi que son image PNG générée.
-
-tp_3_CI.pdf: Un fichier PDF qui semble être lié à un tutoriel ou une documentation sur le sujet de CI (Intégration Continue).
+* docker-app: Un répertoire contenant un fichier Dockerfile pour la construction d'une image Docker de l'application
+* pipeline-ci-schema: Un répertoire contenant un schéma de pipeline CI
+* tp_3_CI.pdf: Sujet du TP sous format PDF
 
 ## Description des pré-requis
 
