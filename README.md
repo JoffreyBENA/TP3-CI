@@ -76,7 +76,7 @@ Avant de mettre en place la chaîne d'intégration continue, assurez-vous d'avoi
 
 Voici un schéma représentant les différentes étapes du pipeline d'intégration continue pour les applications Python :
 
-![Alt text](pipeline-ci-schema/pipeline-ci.pdf)
+![Alt text](pipeline-ci-schema/pipeline-ci.jpg)
 
 Ce schéma présente les différentes étapes du pipeline d'intégration continue pour une application Python. Il commence par la récupération du code source à partir d'un référentiel Git, puis passe par les étapes de de tests unitaires , puis de linter (vérification des normes de codage), de détection de copier-coller, d'analyse de la complexité cyclomatiquev et enfin de construction et de publication de l'image Docker sur le DOcker Hub.
 
