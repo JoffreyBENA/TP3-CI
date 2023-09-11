@@ -72,56 +72,11 @@ Avant de mettre en place la chaîne d'intégration continue, assurez-vous d'avoi
         - clone_digger (pour la vérification des copier-coller)
         - radon (pour l'analyse de la complexité cyclomatique)
 
-Schéma de présentation des étapes du pipeline :
+## Schéma de présentation du déploiement :
 
 Voici un schéma représentant les différentes étapes du pipeline d'intégration continue pour les applications Python :
 
-                   +---------------------+
-                   |   Récupération du   |
-                   |     code source     |
-                   |     (GitHub)        |
-                   +----------+----------+
-                              |
-                              v
-                   +----------+----------+
-                   |     Linter de la    |
-                   |   qualité du code   |
-                   |       (Flake8)      |
-                   +----------+----------+
-                              |
-                              v
-            +-----------------+-----------------+
-            |   Vérification des copier-coller  |
-            |           clone-digger            |
-            +-----------------+-----------------+
-                              |
-                              v
-     +------------------------+------------------------+
-     |   Analyse de la complexité cyclomatique (Radon) |
-     +------------------------+------------------------+
-                              |
-                              v
-             +----------------+----------------+
-             |          Tests unitaires        |
-             |         (Pytest,Unittest)       |
-             +----------------+----------------+
-                              |
-                              v
-              +---------------+--------------+
-              |   Construction de l'image    |
-              |       Docker (Build)         |
-              +---------------+--------------+
-                              |
-                              v
-          +-------------------+-------------------+
-          |  Pousser l'image Docker sur le Docker |
-          |                  Hub (Push)           |
-          +-------------------+-------------------+
-                              |
-                              v
-                   +----------+----------+
-                   |    Déploiement      |
-                   +---------------------+
+![Alt text](pipeline-ci-schema/pipeline-ci.drawio.png)
 
 Ce schéma présente les différentes étapes du pipeline d'intégration continue pour une application Python. Il commence par la récupération du code source à partir d'un référentiel Git, puis passe par les étapes de linter (vérification des normes de codage), de détection de copier-coller, d'analyse de la complexité cyclomatique, de tests unitaires et enfin de construction et de publication de l'image Docker sur le DOcker Hub.
 
