@@ -48,7 +48,7 @@ jobs:
           pip install html-testRunner
       - name: Analysing the code with unittest
         run: |
-          python -m unittest discover -s ./app/test/unit -p '*_test.py'
+          python -m unittest discover -s app/test/unit -p '*_test.py'
       - name: Archive report
         uses: actions/upload-artifact@v2
         with:
