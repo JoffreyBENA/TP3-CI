@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.11
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: 3.11
 
@@ -33,7 +33,7 @@ jobs:
           pylint $(git ls-files 'app/**/*.py') > app/reports/pylint/report.json || exit 0
           pylint-json2html -o app/reports/pylint/report.html app/reports/pylint/report.json
       - name: Archive results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pylint result
           path: app/reports/pylint
@@ -50,7 +50,7 @@ jobs:
         run: |
           python -m unittest discover -s app/test/unit -p '*_test.py'
       - name: Archive report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: unittest results
           path: app/reports/unittest/
@@ -69,7 +69,7 @@ jobs:
           mkdir -p app/reports/raw  # Créez le répertoire s'il n'existe pas déjà
           radon raw -j app > app/reports/raw/report.json; json2tree -j app/reports/raw/report.html -t 1
       - name: Archive report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: radon raw results
           path: app/reports/raw/
@@ -88,7 +88,7 @@ jobs:
           mkdir -p app/reports/cc  # Créez le répertoire s'il n'existe pas déjà
           radon cc -j app > app/reports/cc/report.json; json2tree -j app/reports/cc/report.html -t 1
       - name: Archive report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: radon cc results
           path: app/reports/cc/
