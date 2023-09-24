@@ -9,17 +9,19 @@ on:
       - main
 
 jobs:
-  pylint-test:
+  set-up-python:
     runs-on: ${{ vars.IMAGE_OS }}
-    strategy:
-      matrix:
-        python-version: ["3.11"]
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.11
+
+  pylint-test:
+    runs-on: ${{ vars.IMAGE_OS }}
+    needs: set-up-python
+    steps:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -33,26 +35,18 @@ jobs:
           mkdir pylint
           cd pylint
           cd ../..
-
           pylint $(git ls-files '**/*.py') > ./reports/pylint/report.json || exit 0
           pylint-json2html -o ./reports/pylint/report.html ./reports/pylint/report.json
       - name: Archive results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: pylint result
           path: ./app/reports/pylint
 
   unittest-test:
     runs-on: ${{ vars.IMAGE_OS }}
-    strategy:
-      matrix:
-        python-version: ["3.11"]
+    needs: set-up-python
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -62,7 +56,7 @@ jobs:
           cd app
           python -m unittest ${{ vars.UNITTEST_FILE}}
       - name: Archive report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: unittest results
           path: |
@@ -70,15 +64,8 @@ jobs:
 
   radon-raw-test:
     runs-on: ${{ vars.IMAGE_OS }}
-    strategy:
-      matrix:
-        python-version: ["3.11"]
+    needs: set-up-python
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -94,7 +81,7 @@ jobs:
           cd ../..
           radon raw -j ./app > ./app/reports/raw/report.json; json2tree -j ./app/reports/raw/report.html -t 1
       - name: Archive report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: radon raw results
           path: |
@@ -102,15 +89,8 @@ jobs:
 
   radon-cc-test:
     runs-on: ${{ vars.IMAGE_OS }}
-    strategy:
-      matrix:
-        python-version: ["3.11"]
+    needs: set-up-python
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -126,16 +106,15 @@ jobs:
           cd ../..
           radon cc -j ./app > ./app/reports/cc/report.json; json2tree -j ./app/reports/cc/report.html -t 1
       - name: Archive report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: radon cc results
           path: |
             app/reports/cc/
 
   build-push-image:
-    needs: [pylint-test, unittest-test, radon-raw-test, radon-cc-test]
     runs-on: ${{ vars.IMAGE_OS }}
-
+    needs: [pylint-test, unittest-test, radon-raw-test, radon-cc-test]
     steps:
       - uses: actions/checkout@v3
       - name: Login to Docker Hub
