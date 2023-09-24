@@ -29,19 +29,14 @@ jobs:
           pip install pylint-json2html
       - name: Analysing the code with pylint
         run: |
-          cd app
-          mkdir reports
-          cd reports
-          mkdir pylint
-          cd pylint
-          cd ../..
-          pylint $(git ls-files '**/*.py') > ./reports/pylint/report.json || exit 0
-          pylint-json2html -o ./reports/pylint/report.html ./reports/pylint/report.json
+          mkdir -p app/reports/pylint  # Créez le répertoire s'il n'existe pas déjà
+          pylint $(git ls-files 'app/**/*.py') > app/reports/pylint/report.json || exit 0
+          pylint-json2html -o app/reports/pylint/report.html app/reports/pylint/report.json
       - name: Archive results
         uses: actions/upload-artifact@v2
         with:
           name: pylint result
-          path: ./app/reports/pylint
+          path: app/reports/pylint
 
   unittest-test:
     runs-on: ${{ vars.IMAGE_OS }}
@@ -53,14 +48,12 @@ jobs:
           pip install html-testRunner
       - name: Analysing the code with unittest
         run: |
-          cd app
-          python -m unittest ${{ vars.UNITTEST_FILE}}
+          python -m unittest discover -s app/test/unit -p '*_test.py'
       - name: Archive report
         uses: actions/upload-artifact@v2
         with:
           name: unittest results
-          path: |
-            app/reports/unittest/
+          path: app/reports/unittest/
 
   radon-raw-test:
     runs-on: ${{ vars.IMAGE_OS }}
@@ -73,19 +66,13 @@ jobs:
           pip install json2tree
       - name: Analysing the code with radon
         run: |
-          pwd
-          cd ./app
-          mkdir reports
-          cd ./reports
-          mkdir raw
-          cd ../..
-          radon raw -j ./app > ./app/reports/raw/report.json; json2tree -j ./app/reports/raw/report.html -t 1
+          mkdir -p app/reports/raw  # Créez le répertoire s'il n'existe pas déjà
+          radon raw -j app > app/reports/raw/report.json; json2tree -j app/reports/raw/report.html -t 1
       - name: Archive report
         uses: actions/upload-artifact@v2
         with:
           name: radon raw results
-          path: |
-            app/reports/raw/
+          path: app/reports/raw/
 
   radon-cc-test:
     runs-on: ${{ vars.IMAGE_OS }}
@@ -98,19 +85,13 @@ jobs:
           pip install json2tree
       - name: Analysing the code with radon
         run: |
-          pwd
-          cd ./app
-          mkdir reports
-          cd ./reports
-          mkdir cc
-          cd ../..
-          radon cc -j ./app > ./app/reports/cc/report.json; json2tree -j ./app/reports/cc/report.html -t 1
+          mkdir -p app/reports/cc  # Créez le répertoire s'il n'existe pas déjà
+          radon cc -j app > app/reports/cc/report.json; json2tree -j app/reports/cc/report.html -t 1
       - name: Archive report
         uses: actions/upload-artifact@v2
         with:
           name: radon cc results
-          path: |
-            app/reports/cc/
+          path: app/reports/cc/
 
   build-push-image:
     runs-on: ${{ vars.IMAGE_OS }}
@@ -118,11 +99,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Login to Docker Hub
-        run: | # log into docker hub account
+        run: |
           docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_TOKEN }}
       - name: Build docker image
         run: |
-          docker build . --file ${{ vars.IMAGE_FILE }} --tag ${{ secrets.DOCKER_USER }}/${{ vars.DOCKER_REPO}}:${{ vars.DOCKER_IMAGE_VERSION }}
+          docker build . --file docker-app/python/Dockerfile --tag ${{ secrets.DOCKER_USER }}/${{ vars.DOCKER_REPO}}:${{ vars.DOCKER_IMAGE_VERSION }}
       - name: Push docker image
         run: |
           docker push  ${{ secrets.DOCKER_USER }}/${{ vars.DOCKER_REPO}}:${{ vars.DOCKER_IMAGE_VERSION }}
