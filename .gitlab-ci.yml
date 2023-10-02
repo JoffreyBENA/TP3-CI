@@ -1,0 +1,125 @@
+stages:
+  - setup
+  - test
+  - deploy
+
+variables:
+  # clone-repo
+  GIT_REPO_URL: "https://github.com/JoffreyBENA/python-api-handle-it.git"   # URL du dépôt Git à cloner 
+  GIT_REPO_PATH: "./app"                                                    # Chemin où le dépôt Git sera cloné
+  IMAGE_OS: "python:3.11"                                                   # Image Docker utilisée pour les jobs de la pipeline
+  # pylint-test
+  PYLINT_CONFIG_FILE: ""                                        # Chemin vers le fichier de configuration Pylint
+  PYLINT_REPORT_PATH: "./reports/pylint"                        # Chemin vers les rapports Pylint
+  # unittest-test
+  UNITTEST_FILE: "./test/unit/test.py"                          # Chemin vers le fichier de configuration Unittest
+  REPO_APP_PATH: "./app"                                        # Chemin du repo de l'application a tester par les test unitaires Unittest
+  UNITTEST_REPORT_PATH: "./reports/unittest/"                   # Chemin vers les rapports Unittest
+  # radon-raw-test
+  RADON_RAW_CONFIG_FILE: ""                                     # Chemin vers le fichier de configuration Radon Raw
+  RADON_RAW_REPORT_PATH: "./reports/raw"                        # Chemin vers les rapports Radon Raw
+  # radon-cc-test
+  RADON_CC_CONFIG_FILE: ""                                      # Chemin vers le fichier de configuration Radon CC
+  RADON_CC_REPORT_PATH: "./reports/cc"                          # Chemin vers les rapports Radon CC
+  # build-image
+  DOCKER_REGISTRY: "docker.io"                                  # URL du registre Docker pour stocker l'image Docker (ici "docker.io" est le registre Docker public par défaut)
+  DOCKER_REPO: "imagepythontp3-gitlabci"                        # Nom du repository Docker (créer à la main sur Docker Hub) qui va stocker l'image Docker
+  DOCKER_IMAGE_VERSION: "v1.0"                                  # Nom de la version de l'image construite et poussée sur le Hub Docker
+  DOCKER_USER : "joffreyb"                                      # Nom d'utilisateur du compte Docker Hub
+  IMAGE_FILE: "./app/docker-app/python/Dockerfile"              # Chemin vers le fichier de configuration de l'image (Dockerfile)
+  DOCKER_IMAGE_PATH: "docker-app/python/"                       # Chemin ou l'artifact de l'image Docker sera enregistré
+
+clone-repo:
+  stage: setup
+  image: ubuntu:latest
+  before_script:
+  - apt-get update && apt-get install -y git
+  script:
+    - git clone $GIT_REPO_URL $GIT_REPO_PATH
+  artifacts:
+    paths:
+      - $GIT_REPO_PATH
+
+pylint-test:
+  stage: test
+  image: $IMAGE_OS
+  script:
+    - echo "Installing dependencies..."
+    - apt-get update && apt-get install -y python3 python3-pip
+    - python3 -m pip install --upgrade pip
+    - pip install pylint pylint-json2html
+    - echo "Running pylint..."
+    - cd $GIT_REPO_PATH
+    - mkdir -p $PYLINT_REPORT_PATH
+    - pylint --rcfile $PYLINT_CONFIG_FILE $(find . -name '*.py') > $PYLINT_REPORT_PATH/report.json || exit 0
+    - pylint-json2html -o $PYLINT_REPORT_PATH/report.html $PYLINT_REPORT_PATH/report.json
+  artifacts:
+    paths:
+      - $GIT_REPO_PATH/$PYLINT_REPORT_PATH
+
+unittest-test:
+  stage: test
+  image: $IMAGE_OS
+  script:
+    - echo "Installing dependencies..."
+    - apt-get update && apt-get install -y python3 python3-pip
+    - python3 -m pip install --upgrade pip
+    - pip install html-testRunner
+    - echo "Running unittest..."
+    - cd $GIT_REPO_PATH
+    - cd $REPO_APP_PATH
+    - mkdir -p $UNITTEST_REPORT_PATH
+    - python3 -m unittest $UNITTEST_FILE
+  artifacts:
+    paths:
+      - $GIT_REPO_PATH/$REPO_APP_PATH/$UNITTEST_REPORT_PATH
+
+radon-raw-test:
+  stage: test
+  image: $IMAGE_OS
+  script:
+    - echo "Installing dependencies..."
+    - apt-get update && apt-get install -y python3 python3-pip
+    - python3 -m pip install --upgrade pip
+    - pip install radon json2tree
+    - echo "Running radon raw..."
+    - cd $GIT_REPO_PATH
+    - mkdir -p $RADON_RAW_REPORT_PATH
+    - radon raw -j $RADON_RAW_CONFIG_FILE . > $RADON_RAW_REPORT_PATH/report.json || exit 0
+    - json2tree -j $RADON_RAW_REPORT_PATH/report.json -t 1 > $RADON_RAW_REPORT_PATH/report.html || exit 0
+  artifacts:
+    paths:
+      - $GIT_REPO_PATH/$RADON_RAW_REPORT_PATH
+
+radon-cc-test:
+  stage: test
+  image: $IMAGE_OS
+  script:
+    - echo "Installing dependencies..."
+    - apt-get update && apt-get install -y python3 python3-pip
+    - python3 -m pip install --upgrade pip
+    - pip install radon json2tree
+    - echo "Running radon cc..."
+    - cd $GIT_REPO_PATH
+    - mkdir -p $RADON_CC_REPORT_PATH
+    - radon cc -j $RADON_CC_CONFIG_FILE . > $RADON_CC_REPORT_PATH/report.json || exit 0
+    - json2tree -j $RADON_CC_REPORT_PATH/report.json -t 1 > $RADON_CC_REPORT_PATH/report.html || exit 0
+  artifacts:
+    paths:
+      - $GIT_REPO_PATH/$RADON_CC_REPORT_PATH
+
+build-image:
+  stage: deploy
+  image: docker:latest
+  services:
+    - alpine:latest
+  before_script:
+    - echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USER" --password-stdin "$DOCKER_REGISTRY"
+  script:
+    - echo "Building docker image..."
+    - docker build -t $DOCKER_USER/$DOCKER_REPO:$DOCKER_IMAGE_VERSION -f $IMAGE_FILE $GIT_REPO_PATH
+    - echo "Pushing docker image..."
+    - docker push $DOCKER_USER/$DOCKER_REPO:$DOCKER_IMAGE_VERSION
+  artifacts:
+    paths:
+      - $GIT_REPO_PATH/$DOCKER_IMAGE_PATH
