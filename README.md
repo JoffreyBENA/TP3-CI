@@ -1,16 +1,63 @@
 # TP3-CI
 
-Description des fichiers fournis
+Documentation de la chaine d’intégration continue permettant de valider l’application avant de la packager dans une image de conteneur
 
-    1- Jenkinsfile: Ce fichier contient la définition du pipeline d'intégration continue pour les applications Python pour une utilisation avec Jenkins.
-    2- .gitlab-ci.yml: Ce fichier contient la définition du pipeline d'intégration continue pour les applications Python pour une utilisation avec GitLab CI.
-    3- main.yml: Ce fichier contient la définition du pipeline d'intégration continue pour les applications Python pour une utilisation avec GitHub Actions.
-    4- Dockerfile: Ce fichier est utilisé pour construire l'image Docker de l'application Python. Il définit les étapes pour installer les dépendances et lancer l'application dans un conteneur.
-    5- requirements.txt: Ce fichier contient la liste des dépendances Python requises pour exécuter l'application.
-    6- .flake8: Ce fichier de configuration est utilisé par le linter Flake8 pour définir les règles de formatage et de qualité du code
-    7- pytest.ini: Ce fichier de configuration est utilisé par pytest pour personnaliser les options de test.
+## Description des fichiers fournis :
 
-Pré-requis :
+```
+.
+├── README.md
+├── app
+│   ├── application
+│   │   ├── __init__.py
+│   │   └── application.py
+│   ├── command
+│   │   ├── __init__.py
+│   │   └── command.py
+│   ├── machine
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   └── preview
+│   │   │       ├── ImageIO
+│   │   │       ├── Matplotlib
+│   │   │       ├── OpenCV
+│   │   │       ├── PIL
+│   │   │       ├── Plotly
+│   │   │       ├── Pytorch
+│   │   │       └── Tensorflow
+│   │   ├── machine.py
+│   │   └── machines.json
+│   ├── main.py
+│   ├── requirements.txt
+│   └── test
+│       ├── __init__.py
+│       ├── system
+│       │   └── machine.robot
+│       └── unit
+│           ├── __init__.py
+│           └── test.py
+├── docker-app
+│   └── python
+│       └── Dockerfile
+├── pipeline-ci-schema
+│   ├── pipeline-ci.drawio
+│   └── pipeline-ci.drawio.png
+└── tp_3_CI.pdf
+```
+
+* README.md: Un fichier Markdown contenant la documentation et les informations importantes sur votre projet.
+* app: Un répertoire contenant le code source de l'application. Il contient plusieurs sous-dossiers et fichiers, notamment :
+* application: Un module Python contenant un fichier __init__.py et application.py.
+* command: Un module Python contenant un fichier __init__.py et command.py.
+* machine: Un module Python contenant un fichier __init__.py, machine.py, et un sous-dossier __pycache__ qui contient des fichiers en cache.
+* main.py: Le fichier principal de votre application.
+* requirements.txt: Un fichier spécifiant les dépendances Python nécessaires pour votre projet.
+* test: Un dossier contenant les tests unitaires de votre application. Il contient un sous-dossier unit avec un fichier test.py.
+* docker-app: Un répertoire contenant un fichier Dockerfile pour la construction d'une image Docker de l'application
+* pipeline-ci-schema: Un répertoire contenant un schéma de pipeline CI
+* tp_3_CI.pdf: Sujet du TP sous format PDF
+
+## Description des pré-requis
 
 Avant de mettre en place la chaîne d'intégration continue, assurez-vous d'avoir les éléments suivants :
 
@@ -25,58 +72,13 @@ Avant de mettre en place la chaîne d'intégration continue, assurez-vous d'avoi
         - clone_digger (pour la vérification des copier-coller)
         - radon (pour l'analyse de la complexité cyclomatique)
 
-Schéma de présentation des étapes du pipeline :
+## Schéma de présentation du déploiement :
 
 Voici un schéma représentant les différentes étapes du pipeline d'intégration continue pour les applications Python :
 
-                   +---------------------+
-                   |   Récupération du   |
-                   |     code source     |
-                   |     (GitHub)        |
-                   +----------+----------+
-                              |
-                              v
-                   +----------+----------+
-                   |     Linter de la    |
-                   |   qualité du code   |
-                   |       (Flake8)      |
-                   +----------+----------+
-                              |
-                              v
-            +-----------------+-----------------+
-            |   Vérification des copier-coller  |
-            |           clone-digger            |
-            +-----------------+-----------------+
-                              |
-                              v
-     +------------------------+------------------------+
-     |   Analyse de la complexité cyclomatique (Radon) |
-     +------------------------+------------------------+
-                              |
-                              v
-             +----------------+----------------+
-             |          Tests unitaires        |
-             |         (Pytest,Unittest)       |
-             +----------------+----------------+
-                              |
-                              v
-              +---------------+--------------+
-              |   Construction de l'image    |
-              |       Docker (Build)         |
-              +---------------+--------------+
-                              |
-                              v
-          +-------------------+-------------------+
-          |  Pousser l'image Docker sur le Docker |
-          |                  Hub (Push)           |
-          +-------------------+-------------------+
-                              |
-                              v
-                   +----------+----------+
-                   |    Déploiement      |
-                   +---------------------+
+![Alt text](pipeline-ci-schema/pipeline-ci.jpg)
 
-Ce schéma présente les différentes étapes du pipeline d'intégration continue pour une application Python. Il commence par la récupération du code source à partir d'un référentiel Git, puis passe par les étapes de linter (vérification des normes de codage), de détection de copier-coller, d'analyse de la complexité cyclomatique, de tests unitaires et enfin de construction et de publication de l'image Docker sur le DOcker Hub.
+Ce schéma présente les différentes étapes du pipeline d'intégration continue pour une application Python. Il commence par la récupération du code source à partir d'un référentiel Git, puis passe par les étapes de de tests unitaires , puis de linter (vérification des normes de codage), de détection de copier-coller, d'analyse de la complexité cyclomatiquev et enfin de construction et de publication de l'image Docker sur le DOcker Hub.
 
 Configuration des paramètres de pipeline :
 

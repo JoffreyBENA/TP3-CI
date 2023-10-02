@@ -13,7 +13,7 @@ jobs:
     runs-on: ${{ vars.IMAGE_OS }}
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.11"]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -46,7 +46,7 @@ jobs:
     runs-on: ${{ vars.IMAGE_OS }}
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.11"]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -72,7 +72,7 @@ jobs:
     runs-on: ${{ vars.IMAGE_OS }}
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.11"]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -104,7 +104,7 @@ jobs:
     runs-on: ${{ vars.IMAGE_OS }}
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.11"]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -133,14 +133,14 @@ jobs:
             app/reports/cc/
 
   build-push-image:
-    needs:
-      [pylint-test, unittest-test, radon-raw-test, radon-cc-test]
+    needs: [pylint-test, unittest-test, radon-raw-test, radon-cc-test]
     runs-on: ${{ vars.IMAGE_OS }}
 
     steps:
       - uses: actions/checkout@v3
       - name: Login to Docker Hub
-        run: | # log into docker hub account
+        run: |
+          # log into docker hub account
           docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_TOKEN }}
       - name: Build docker image
         run: |
